@@ -1,31 +1,41 @@
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import {
+    adminMiddleware,
+    apiMiddleware,
+    createUserMiddleware,
+} from "@/config/middleware";
+
+const URLS: string[] = ["/login", "/api/auth/callback"];
 
 export async function middleware(req: NextRequest) {
     const res = NextResponse.next();
     const supabase = createServerComponentClient({ cookies });
     const {
         data: { user },
-        error: authError,
     } = await supabase.auth.getUser();
 
+    if (req.nextUrl.pathname.startsWith("/api")) {
+        return apiMiddleware();
+    }
+
+    if (req.nextUrl.pathname.startsWith("/admin")) {
+        return adminMiddleware();
+    }
+
+    if (req.nextUrl.pathname.startsWith("/new-profile")) {
+        return createUserMiddleware(user, supabase);
+    }
     if (
         req.nextUrl.pathname == "/" ||
-        req.nextUrl.pathname.startsWith("/login")
+        URLS.some((e) => {
+            return req.nextUrl.pathname.startsWith(e);
+        }) ||
+        true
     ) {
         return res;
     }
-
-    if (authError) {
-        // Redirect to the login page with an error message
-        const redirectUrl = new URL(
-            `${process.env.NEXT_PUBLIC_BASE_URL}/login`
-        );
-        redirectUrl.searchParams.set("error", "You are not logged in!");
-        return NextResponse.redirect(redirectUrl);
-    }
-
     return res;
 }
 

@@ -43,24 +43,40 @@ export async function GET(request: Request) {
     // Get user id to check if it is a new user or not
     const id = user.id;
 
-    const { data, error: databaseError } = await supabase
+    const { error: idError } = await supabase
+        .from("tbl_student")
+        .select("id")
+        .eq("id", id)
+        .single();
+
+    if (idError) {
+        const redirectUrl = new URL(
+            `${process.env.NEXT_PUBLIC_BASE_URL}/login`
+        );
+        redirectUrl.searchParams.set("error", idError.message);
+        return NextResponse.redirect(redirectUrl);
+    }
+
+    const {
+        data: { stud_number },
+        error: tblError,
+    } = await supabase
         .from("tbl_student")
         .select("stud_number")
         .eq("id", id)
         .single();
 
     // Handle error in database query
-    if (databaseError) {
+    if (tblError) {
         const redirectUrl = new URL(
             `${process.env.NEXT_PUBLIC_BASE_URL}/login`
         );
-        redirectUrl.searchParams.set("error", "Database error!");
+        redirectUrl.searchParams.set("error", tblError.message);
         return NextResponse.redirect(redirectUrl);
     }
 
-    if (data?.stud_number != null) {
-        return NextResponse.redirect("http://localhost:3000/home");
-    } else {
+    if (stud_number == null) {
         return NextResponse.redirect("http://localhost:3000/new-profile");
     }
+    return NextResponse.redirect("http://localhost:3000/");
 }

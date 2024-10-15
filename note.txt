@@ -1,0 +1,4 @@
+Service role key -> infinite access
+use in API
+do an api call that checks if user is in the table
+if yes, then allow it
