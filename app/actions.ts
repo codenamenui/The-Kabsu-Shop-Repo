@@ -7,10 +7,8 @@ export const checkPriviliege = async () => {
                 "Content-Type": "application/json",
             },
             credentials: "same-origin",
-            next: { revalidate: 10 },
         }
     );
 
-    const data = res;
-    return data;
+    return res;
 };

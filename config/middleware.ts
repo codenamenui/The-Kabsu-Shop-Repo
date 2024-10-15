@@ -67,7 +67,7 @@ export async function adminMiddleware() {
     const val = checkPriviliege();
     const res = await (await val).json();
     if (!res.message) {
-        return NextResponse.redirect("http://localhost:3000/login");
+        return NextResponse.redirect("http://localhost:3000/");
     }
     return NextResponse.next();
 }
